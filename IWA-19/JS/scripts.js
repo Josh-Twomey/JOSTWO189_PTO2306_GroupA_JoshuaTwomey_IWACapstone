@@ -1,7 +1,6 @@
-import { BOOKS_PER_PAGE ,authors, genres, books } from "../JS/data.js";
-const newArray = []
-let result = []
-
+import { BOOKS_PER_PAGE, authors, genres, books } from "../JS/data.js";
+const newArray = [];
+let result = [];
 
 for (const obj of books) {
   const newObject = { ...obj }; // Create a deep copy of the current object
@@ -10,21 +9,22 @@ for (const obj of books) {
   }
 }
 
-
 let page = 1;
-let range = [0,36];
+let range = [0, 36];
 if (!books && !Array.isArray(books)) throw new Error("Source required");
-if (!range && range.length < 2) throw new Error("Range must be an array with two numbers");
+if (!range && range.length < 2)
+  throw new Error("Range must be an array with two numbers");
 const showMore = document.querySelector("[data-list-button]");
 
 const updateButtonText = (number) => {
-  if ((number - (BOOKS_PER_PAGE * page) >= 0)) {
+  if (number - BOOKS_PER_PAGE * page >= 0) {
     showMore.innerHTML = /* html */ [
       `<span>Show more</span>
-       <span class="list__remaining">(${number - (BOOKS_PER_PAGE * page)})</span>`,
+       <span class="list__remaining">(${
+         number - BOOKS_PER_PAGE * page
+       })</span>`,
     ];
     showMore.disabled = false;
-    console.log(number * page);
   } else {
     showMore.innerHTML = /* html */ [
       `<span>Show more</span>
@@ -34,35 +34,33 @@ const updateButtonText = (number) => {
   }
 };
 
-
 const showMoreBooks = () => {
-      if (result.length > 0) {
-        page = page + 1;
-        const amountToDisplay = BOOKS_PER_PAGE * page;
-        range.pop();
-        range.push(amountToDisplay);
-        createDisplay(result);
-      } else {
-        page = page + 1;
-        const amountToDisplay = BOOKS_PER_PAGE * page;
-        range.pop();
-        range.push(amountToDisplay);
-        createDisplay(newArray);
-      }
+  if (result.length > 0) {
+    page = page + 1;
+    const amountToDisplay = BOOKS_PER_PAGE * page;
+    range.pop();
+    range.push(amountToDisplay);
+    createDisplay(result);
+  } else {
+    page = page + 1;
+    const amountToDisplay = BOOKS_PER_PAGE * page;
+    range.pop();
+    range.push(amountToDisplay);
+    createDisplay(newArray);
+  }
 };
-  
 
 showMore.addEventListener("click", showMoreBooks);
 
 const createDisplay = (array) => {
   document.querySelector("[data-list-items]").innerHTML = "";
   const fragment = document.createDocumentFragment();
-  let extracted = []
+  let extracted = [];
   updateButtonText(array.length);
   if (array.length > 36) {
-   extracted = array.slice(range[0], range[1]);
+    extracted = array.slice(range[0], range[1]);
   } else {
-   extracted = array.slice(range[0],array.length) 
+    extracted = array.slice(range[0], array.length);
   }
   const createPreview = (bookDetails) => {
     const { id, title, author, image } = bookDetails;
@@ -111,13 +109,13 @@ const searchOverlay = document.querySelector("[data-search-overlay]");
 const searchOverlayToggle = (event) => {
   if (event.target.innerHTML === "Cancel") {
     searchOverlay.open = false;
-    searchSave.reset()
+    searchSave.reset();
   } else if (
     event.target.innerHTML !== "Cancel" &&
     event.target.innerHTML !== "Search"
   ) {
     searchOverlay.open = true;
-    document.querySelector('[data-search-title]').focus();
+    document.querySelector("[data-search-title]").focus();
 
     const genresFragment = document.createDocumentFragment();
     const allGenresOption = document.createElement("option");
@@ -134,7 +132,7 @@ const searchOverlayToggle = (event) => {
     }
 
     document.querySelector("[data-search-genres]").appendChild(genresFragment);
-    
+
     const authorsFragment = document.createDocumentFragment();
     const allAuthorsOption = document.createElement("option");
     allAuthorsOption.value = "any";
@@ -149,38 +147,39 @@ const searchOverlayToggle = (event) => {
       authorsFragment.appendChild(authorOption);
     }
 
-    document.querySelector("[data-search-authors]").appendChild(authorsFragment);
+    document
+      .querySelector("[data-search-authors]")
+      .appendChild(authorsFragment);
   }
 };
 
+const searchOverlaySubmit = (event) => {
+  event.preventDefault();
+  const formData = new FormData(event.target);
+  const { author, genre, title } = Object.fromEntries(formData);
+  let counter = 0;
+  page = 1;
+  range = [0, 36];
+  title ? counter++ : "";
+  author !== "any" ? counter++ : "";
+  genre !== "any" ? counter++ : "";
 
-  const searchOverlaySubmit = (event) => {
-    event.preventDefault()
-    const formData = new FormData(event.target)
-    const { author, genre, title} = Object.fromEntries(formData)
-    let counter = 0;
-    page = 1
-    range = [0, 36];
-    title ? counter++ : "";
-    author !== "any" ? counter++ : "";
-    genre !== "any" ? counter++ : "";
-    
-    if (counter !== 0 ) {
+  if (counter !== 0) {
     for (let i = 0; i < newArray.length; i++) {
-        let titleMatch = false;
-        if (title !== "") {
-          titleMatch = newArray[i].title
-            .toLocaleLowerCase()
-            .includes(title.trim().toLocaleLowerCase());
+      let titleMatch = false;
+      if (title !== "") {
+        titleMatch = newArray[i].title
+          .toLocaleLowerCase()
+          .includes(title.trim().toLocaleLowerCase());
+      }
+      let authorMatch = newArray[i].author === author;
+      let genreMatch = false;
+      for (let j = 0; j < newArray[i].genres.length; j++) {
+        if (newArray[i].genres[j] === genre) {
+          genreMatch = true;
         }
-        let authorMatch = newArray[i].author === author;
-        let genreMatch = false;
-        for (let j = 0; j < newArray[i].genres.length; j++) {
-          if (newArray[i].genres[j] === genre) {
-            genreMatch = true;
-          }
-        }
-      
+      }
+
       const checkAll3 = authorMatch && genreMatch && titleMatch;
       const check2 =
         (authorMatch && (genreMatch || titleMatch)) ||
@@ -188,43 +187,41 @@ const searchOverlayToggle = (event) => {
       const check1 = genreMatch || authorMatch || titleMatch;
 
       if (counter === 3) {
-        checkAll3 ? result.push(books[i]) : '';
+        checkAll3 ? result.push(newArray[i]) : "";
       } else if (counter === 2) {
-        check2 ? result.push(books[i]) : '';
+        check2 ? result.push(newArray[i]) : "";
       } else if (counter === 1) {
-        check1 ? result.push(books[i]) : '';
+        check1 ? result.push(newArray[i]) : "";
       }
     }
-    
-    if ((result.length === 0)) {
-          createDisplay(result);
-          document
-            .querySelector(".list__message")
-            .style.setProperty("display", "block");
-        } else {
-          createDisplay(result);
-          document
-            .querySelector(".list__message")
-            .style.setProperty("display", "none");
-        }
-} else {
-  createDisplay(newArray);
-  result = []
-}
-    searchOverlay.open = false;
-    searchSave.reset()
-}
 
+    if (result.length === 0) {
+      createDisplay(result);
+      document
+        .querySelector(".list__message")
+        .style.setProperty("display", "block");
+    } else {
+      createDisplay(result);
+      document
+        .querySelector(".list__message")
+        .style.setProperty("display", "none");
+    }
+  } else {
+    createDisplay(newArray);
+    result = [];
+  }
+  searchOverlay.open = false;
+  searchSave.reset();
+};
 
 searchOpen.addEventListener("click", searchOverlayToggle);
 searchCancel.addEventListener("click", searchOverlayToggle);
 searchSave.addEventListener("submit", searchOverlaySubmit);
 
-
 /* Selects specific elements from the DOM using data attributes and assigns them to 
   variables for further use.*/
-const settingOpen = document.querySelector('[data-header-settings]')
-const settingCancel = document.querySelector('[data-settings-cancel]');
+const settingOpen = document.querySelector("[data-header-settings]");
+const settingCancel = document.querySelector("[data-settings-cancel]");
 const settingSave = document.querySelector("[data-settings-form]");
 const settingOverlay = document.querySelector("[data-settings-overlay]");
 
@@ -232,15 +229,18 @@ const settingOverlay = document.querySelector("[data-settings-overlay]");
 const settingOverlayToggle = (event) => {
   if (event.target.innerHTML === "Cancel") {
     settingOverlay.open = false;
-  } else if (event.target.innerHTML !== "Cancel" && event.target.innerHTML !== "Save"){
+  } else if (
+    event.target.innerHTML !== "Cancel" &&
+    event.target.innerHTML !== "Save"
+  ) {
     settingOverlay.open = true;
-  };
-}
+  }
+};
 
 const settingOverlaySubmit = (event) => {
   event.preventDefault();
   const formData = new FormData(event.target);
-  const {theme} = Object.fromEntries(formData);
+  const { theme } = Object.fromEntries(formData);
   const matches = theme === "night";
   const root = document.documentElement;
 
@@ -251,36 +251,36 @@ const settingOverlaySubmit = (event) => {
     root.style.setProperty("--color-dark", "10, 10, 20");
     root.style.setProperty("--color-light", "255, 255, 255");
   }
-  settingOverlay.open=false
+  settingOverlay.open = false;
 };
 
 settingOpen.addEventListener("click", settingOverlayToggle);
 settingCancel.addEventListener("click", settingOverlayToggle);
 settingSave.addEventListener("submit", settingOverlaySubmit);
 
-
- 
-const dataListOpen = document.querySelector('[data-list-items]')
+const dataListOpen = document.querySelector("[data-list-items]");
 const dataListClose = document.querySelector("[data-list-close]");
 const dataListToggle = (event) => {
   let specificBook = event.target.id;
-  if (event.target.innerHTML !== "Close"){
+  if (event.target.innerHTML !== "Close") {
     event.preventDefault();
     console.log(event);
     document.querySelector("[data-list-active]").open = true;
     for (const obj of newArray) {
-      if (obj.id === specificBook){
+      if (obj.id === specificBook) {
         document.querySelector("[data-list-image]").src = obj.image;
         document.querySelector("[data-list-title]").innerHTML = obj.title;
-        document.querySelector("[data-list-subtitle]").innerHTML = `${authors[obj.author]} (${new Date(obj.published).getFullYear()})`;
-        document.querySelector("[data-list-description]").innerHTML = obj.description;
+        document.querySelector("[data-list-subtitle]").innerHTML = `${
+          authors[obj.author]
+        } (${new Date(obj.published).getFullYear()})`;
+        document.querySelector("[data-list-description]").innerHTML =
+          obj.description;
       }
     }
-  } else if (event.target.innerHTML === "Close"){
+  } else if (event.target.innerHTML === "Close") {
     document.querySelector("[data-list-active]").open = false;
   }
-}
+};
 
-dataListOpen.addEventListener("click", dataListToggle)
+dataListOpen.addEventListener("click", dataListToggle);
 dataListClose.addEventListener("click", dataListToggle);
-
