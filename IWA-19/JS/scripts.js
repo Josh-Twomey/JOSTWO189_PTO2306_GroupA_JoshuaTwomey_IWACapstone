@@ -1,68 +1,90 @@
 import { BOOKS_PER_PAGE, authors, genres, books } from "../JS/data.js";
-const newArray = [];
-let result = [];
+/**
+ * bookArray has no duplicate entries compared to the books array given in the data.js file 
+*/
+const bookArray = [];
+/**
+ * searchArray is populated with the correct books that fit the filters the user has searched for
+ */
+let searchArray = [];
 
 for (const obj of books) {
   const newObject = { ...obj }; // Create a deep copy of the current object
-  if (!newArray.some((item) => item.title === newObject.title)) {
-    newArray.push(newObject);
+  if (!bookArray.some((item) => item.title === newObject.title)) {
+    bookArray.push(newObject);
   }
 }
-
-let page = 1;
+/**
+ * page counter to use in the showMoreButton
+ */
+let pageCounter = 1;
+/**
+ * range used to change the bookList length
+ */
 let range = [0, 36];
-if (!books && !Array.isArray(books)) throw new Error("Source required");
+if (!bookArray && !Array.isArray(bookArray)) throw new Error("Source required");
 if (!range && range.length < 2)
   throw new Error("Range must be an array with two numbers");
-const showMore = document.querySelector("[data-list-button]");
+
+const showMoreButton = document.querySelector("[data-list-button]");
+
+/**
+ * JavaScript code for updating the text of a button based on a given number.
+ * If the number is greater than or equal to a certain value, the button text will include the remaining number of items.
+ * Otherwise, the button text will indicate that there are no remaining items and the button will be disabled.
+ */
 
 const updateButtonText = (number) => {
-  if (number - BOOKS_PER_PAGE * page >= 0) {
-    showMore.innerHTML = /* html */ [
+  if (number - BOOKS_PER_PAGE * pageCounter >= 0) {
+    showMoreButton.innerHTML = /* html */ [
       `<span>Show more</span>
        <span class="list__remaining">(${
-         number - BOOKS_PER_PAGE * page
+         number - BOOKS_PER_PAGE * pageCounter
        })</span>`,
     ];
-    showMore.disabled = false;
+    showMoreButton.disabled = false;
   } else {
-    showMore.innerHTML = /* html */ [
+    showMoreButton.innerHTML = /* html */ [
       `<span>Show more</span>
        <span class="list__remaining">(0)</span>`,
     ];
-    showMore.disabled = true;
+    showMoreButton.disabled = true;
   }
 };
-
+// Add feature to scroll to the top of the page
 const showMoreBooks = () => {
-  if (result.length > 0) {
-    page = page + 1;
-    const amountToDisplay = BOOKS_PER_PAGE * page;
+  if (searchArray.length > 0) {
+    pageCounter = pageCounter + 1;
+    const amountToDisplay = BOOKS_PER_PAGE * pageCounter;
     range.pop();
     range.push(amountToDisplay);
-    createDisplay(result);
+    createDisplay(searchArray);
   } else {
-    page = page + 1;
-    const amountToDisplay = BOOKS_PER_PAGE * page;
+    pageCounter = pageCounter + 1;
+    const amountToDisplay = BOOKS_PER_PAGE * pageCounter;
     range.pop();
     range.push(amountToDisplay);
-    createDisplay(newArray);
+    createDisplay(bookArray);
   }
 };
 
-showMore.addEventListener("click", showMoreBooks);
+showMoreButton.addEventListener("click", showMoreBooks);
 
 const createDisplay = (array) => {
   document.querySelector("[data-list-items]").innerHTML = "";
-  const fragment = document.createDocumentFragment();
-  let extracted = [];
+  const bookListFragment = document.createDocumentFragment();
+  let extractedArray = [];
   updateButtonText(array.length);
   if (array.length > 36) {
-    extracted = array.slice(range[0], range[1]);
+    extractedArray = array.slice(range[0], range[1]);
   } else {
-    extracted = array.slice(range[0], array.length);
+    extractedArray = array.slice(range[0], array.length);
   }
-  const createPreview = (bookDetails) => {
+/**
+ * JavaScript code to create an HTML element for displaying book details.
+ */
+
+  const createBookHtml = (bookDetails) => {
     const { id, title, author, image } = bookDetails;
     const element = document.createElement("button");
     element.classList = "preview";
@@ -84,22 +106,28 @@ const createDisplay = (array) => {
     return element;
   };
 
-  for (let i = 0; i < extracted.length; i++) {
-    const preview = createPreview({
-      author: authors[extracted[i].author],
-      id: extracted[i].id,
-      image: extracted[i].image,
-      title: extracted[i].title,
+/*
+ This code iterates through the 'extractedArray' and creates an HTML element for
+ each item in the array using the 'createBookHtml' function. The created HTML 
+ elements are then appended to the 'bookListFragment'.
+*/
+
+  for (let i = 0; i < extractedArray.length; i++) {
+    const bookList = createBookHtml({
+      author: authors[extractedArray[i].author],
+      id: extractedArray[i].id,
+      image: extractedArray[i].image,
+      title: extractedArray[i].title,
     });
 
-    fragment.appendChild(preview);
+    bookListFragment.appendChild(bookList);
   }
 
   const bookDisplay = document.querySelector("[data-list-items]");
-  bookDisplay.appendChild(fragment);
+  bookDisplay.appendChild(bookListFragment);
 };
 
-createDisplay(newArray);
+createDisplay(bookArray);
 
 const searchOpen = document.querySelector("[data-header-search]");
 const searchCancel = document.querySelector("[data-search-cancel]");
@@ -158,24 +186,25 @@ const searchOverlaySubmit = (event) => {
   const formData = new FormData(event.target);
   const { author, genre, title } = Object.fromEntries(formData);
   let counter = 0;
-  page = 1;
+  pageCounter = 1;
   range = [0, 36];
+  searchArray = [];
   title ? counter++ : "";
   author !== "any" ? counter++ : "";
   genre !== "any" ? counter++ : "";
 
   if (counter !== 0) {
-    for (let i = 0; i < newArray.length; i++) {
+    for (let i = 0; i < bookArray.length; i++) {
       let titleMatch = false;
       if (title !== "") {
-        titleMatch = newArray[i].title
+        titleMatch = bookArray[i].title
           .toLocaleLowerCase()
           .includes(title.trim().toLocaleLowerCase());
       }
-      let authorMatch = newArray[i].author === author;
+      let authorMatch = bookArray[i].author === author;
       let genreMatch = false;
-      for (let j = 0; j < newArray[i].genres.length; j++) {
-        if (newArray[i].genres[j] === genre) {
+      for (let j = 0; j < bookArray[i].genres.length; j++) {
+        if (bookArray[i].genres[j] === genre) {
           genreMatch = true;
         }
       }
@@ -187,28 +216,27 @@ const searchOverlaySubmit = (event) => {
       const check1 = genreMatch || authorMatch || titleMatch;
 
       if (counter === 3) {
-        checkAll3 ? result.push(newArray[i]) : "";
+        checkAll3 ? searchArray.push(bookArray[i]) : "";
       } else if (counter === 2) {
-        check2 ? result.push(newArray[i]) : "";
+        check2 ? searchArray.push(bookArray[i]) : "";
       } else if (counter === 1) {
-        check1 ? result.push(newArray[i]) : "";
+        check1 ? searchArray.push(bookArray[i]) : "";
       }
     }
 
-    if (result.length === 0) {
-      createDisplay(result);
+    if (searchArray.length === 0) {
+      createDisplay(searchArray);
       document
         .querySelector(".list__message")
         .style.setProperty("display", "block");
     } else {
-      createDisplay(result);
+      createDisplay(searchArray);
       document
         .querySelector(".list__message")
         .style.setProperty("display", "none");
     }
   } else {
-    createDisplay(newArray);
-    result = [];
+    createDisplay(bookArray);
   }
   searchOverlay.open = false;
   searchSave.reset();
@@ -228,6 +256,7 @@ const settingOverlay = document.querySelector("[data-settings-overlay]");
 // Code to toggle the setting overlay
 const settingOverlayToggle = (event) => {
   if (event.target.innerHTML === "Cancel") {
+    settingSave.reset();
     settingOverlay.open = false;
   } else if (
     event.target.innerHTML !== "Cancel" &&
@@ -252,6 +281,7 @@ const settingOverlaySubmit = (event) => {
     root.style.setProperty("--color-light", "255, 255, 255");
   }
   settingOverlay.open = false;
+  settingSave.reset()
 };
 
 settingOpen.addEventListener("click", settingOverlayToggle);
@@ -260,6 +290,7 @@ settingSave.addEventListener("submit", settingOverlaySubmit);
 
 const dataListOpen = document.querySelector("[data-list-items]");
 const dataListClose = document.querySelector("[data-list-close]");
+
 const dataListToggle = (event) => {
   let specificBook = event.target.id;
   if (event.target.innerHTML !== "Close") {
@@ -284,3 +315,10 @@ const dataListToggle = (event) => {
 
 dataListOpen.addEventListener("click", dataListToggle);
 dataListClose.addEventListener("click", dataListToggle);
+
+const overlayDataSecondary = document.querySelector(".overlay__data_secondary");
+overlayDataSecondary.style.setProperty("padding", "20px");
+overlayDataSecondary.style.setProperty("overflow-x", "hidden");
+overlayDataSecondary.style.setProperty("overflow-y", "scroll");
+overlayDataSecondary.style.setProperty("max-height", "250px");
+
