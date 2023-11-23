@@ -1,32 +1,37 @@
 import { BOOKS_PER_PAGE, authors, genres, books } from "../JS/data.js";
-/**
- * bookArray has no duplicate entries compared to the books array given in the data.js file 
-*/
-const bookArray = [];
-/**
- * searchArray is populated with the correct books that fit the filters the user has searched for
- */
-let searchArray = [];
-
+// Add feature to scroll to the top of the page
+// Add Blur
+// Add jsDoc to some functions
+const bookArrayNoDuplicates = [];
+let booksMatchingFilterCriteria = [];
+//This for loop removes the duplicate entries from books array and populates the bookArrayNoDuplicates 
 for (const obj of books) {
-  const newObject = { ...obj }; // Create a deep copy of the current object
-  if (!bookArray.some((item) => item.title === newObject.title)) {
-    bookArray.push(newObject);
+  const newObject = { ...obj }; // Creates shallow copy of obj
+  if (!bookArrayNoDuplicates.some((book) => book.title === newObject.title)) {
+    bookArrayNoDuplicates.push(newObject);
   }
 }
-/**
- * page counter to use in the showMoreButton
- */
-let pageCounter = 1;
-/**
- * range used to change the bookList length
- */
-let range = [0, 36];
-if (!bookArray && !Array.isArray(bookArray)) throw new Error("Source required");
-if (!range && range.length < 2)
+let pageCount = 1;
+let displayedBooksCount = [0, 36];
+
+if (!bookArrayNoDuplicates && !Array.isArray(bookArrayNoDuplicates)) throw new Error("Source required");
+if (!displayedBooksCount && displayedBooksCount.length < 2)
   throw new Error("Range must be an array with two numbers");
 
+/* Selecting specific elements from the DOM using data attributes and assigning them to 
+   variables for further use.*/
 const showMoreButton = document.querySelector("[data-list-button]");
+const bookSearchOpen = document.querySelector("[data-header-search]");
+const bookSearchCancel = document.querySelector("[data-search-cancel]");
+const bookSearchSubmit = document.querySelector("[data-search-form]");
+const bookSearchOverlay = document.querySelector("[data-search-overlay]");
+const themeSettingOpen = document.querySelector("[data-header-settings]");
+const themeSettingCancel = document.querySelector("[data-settings-cancel]");
+const themeSettingSubmit = document.querySelector("[data-settings-form]");
+const themeSettingOverlay = document.querySelector("[data-settings-overlay]");
+const bookPreviewOpen = document.querySelector("[data-list-items]");
+const bookPreviewClose = document.querySelector("[data-list-close]");
+
 
 /**
  * JavaScript code for updating the text of a button based on a given number.
@@ -34,12 +39,12 @@ const showMoreButton = document.querySelector("[data-list-button]");
  * Otherwise, the button text will indicate that there are no remaining items and the button will be disabled.
  */
 
-const updateButtonText = (number) => {
-  if (number - BOOKS_PER_PAGE * pageCounter >= 0) {
+const updateButton = (number) => {
+  if (number - BOOKS_PER_PAGE * pageCount >= 0) {
     showMoreButton.innerHTML = /* html */ [
       `<span>Show more</span>
        <span class="list__remaining">(${
-         number - BOOKS_PER_PAGE * pageCounter
+         number - BOOKS_PER_PAGE * pageCount
        })</span>`,
     ];
     showMoreButton.disabled = false;
@@ -51,20 +56,20 @@ const updateButtonText = (number) => {
     showMoreButton.disabled = true;
   }
 };
-// Add feature to scroll to the top of the page
+
 const showMoreBooks = () => {
-  if (searchArray.length > 0) {
-    pageCounter = pageCounter + 1;
-    const amountToDisplay = BOOKS_PER_PAGE * pageCounter;
-    range.pop();
-    range.push(amountToDisplay);
-    createDisplay(searchArray);
+  if (booksMatchingFilterCriteria.length > 0) {
+    pageCount = pageCount + 1;
+    const amountToDisplay = BOOKS_PER_PAGE * pageCount;
+    displayedBooksCount.pop();
+    displayedBooksCount.push(amountToDisplay);
+    createDisplay(booksMatchingFilterCriteria);
   } else {
-    pageCounter = pageCounter + 1;
-    const amountToDisplay = BOOKS_PER_PAGE * pageCounter;
-    range.pop();
-    range.push(amountToDisplay);
-    createDisplay(bookArray);
+    pageCount = pageCount + 1;
+    const amountToDisplay = BOOKS_PER_PAGE * pageCount;
+    displayedBooksCount.pop();
+    displayedBooksCount.push(amountToDisplay);
+    createDisplay(bookArrayNoDuplicates);
   }
 };
 
@@ -73,17 +78,17 @@ showMoreButton.addEventListener("click", showMoreBooks);
 const createDisplay = (array) => {
   document.querySelector("[data-list-items]").innerHTML = "";
   const bookListFragment = document.createDocumentFragment();
-  let extractedArray = [];
-  updateButtonText(array.length);
+  let visibleBooks = [];
+  updateButton(array.length);
   if (array.length > 36) {
-    extractedArray = array.slice(range[0], range[1]);
+    visibleBooks = array.slice(displayedBooksCount[0], displayedBooksCount[1]);
   } else {
-    extractedArray = array.slice(range[0], array.length);
+    visibleBooks = array.slice(displayedBooksCount[0], array.length);
   }
-/**
- * JavaScript code to create an HTML element for displaying book details.
- */
 
+/**
+ * Creates an HTML element for displaying the book details.
+ */
   const createBookHtml = (bookDetails) => {
     const { id, title, author, image } = bookDetails;
     const element = document.createElement("button");
@@ -112,12 +117,12 @@ const createDisplay = (array) => {
  elements are then appended to the 'bookListFragment'.
 */
 
-  for (let i = 0; i < extractedArray.length; i++) {
+  for (let i = 0; i < visibleBooks.length; i++) {
     const bookList = createBookHtml({
-      author: authors[extractedArray[i].author],
-      id: extractedArray[i].id,
-      image: extractedArray[i].image,
-      title: extractedArray[i].title,
+      author: authors[visibleBooks[i].author],
+      id: visibleBooks[i].id,
+      image: visibleBooks[i].image,
+      title: visibleBooks[i].title,
     });
 
     bookListFragment.appendChild(bookList);
@@ -126,23 +131,20 @@ const createDisplay = (array) => {
   const bookDisplay = document.querySelector("[data-list-items]");
   bookDisplay.appendChild(bookListFragment);
 };
+// Original Display for the web page created
+createDisplay(bookArrayNoDuplicates);
 
-createDisplay(bookArray);
 
-const searchOpen = document.querySelector("[data-header-search]");
-const searchCancel = document.querySelector("[data-search-cancel]");
-const searchSave = document.querySelector("[data-search-form]");
-const searchOverlay = document.querySelector("[data-search-overlay]");
 
 const searchOverlayToggle = (event) => {
   if (event.target.innerHTML === "Cancel") {
-    searchOverlay.open = false;
-    searchSave.reset();
+    bookSearchOverlay.open = false;
+    bookSearchSubmit.reset();
   } else if (
     event.target.innerHTML !== "Cancel" &&
     event.target.innerHTML !== "Search"
   ) {
-    searchOverlay.open = true;
+    bookSearchOverlay.open = true;
     document.querySelector("[data-search-title]").focus();
 
     const genresFragment = document.createDocumentFragment();
@@ -152,10 +154,10 @@ const searchOverlayToggle = (event) => {
     genresFragment.appendChild(allGenresOption);
 
     for (const genreKey of Object.keys(genres)) {
-      const genre = genres[genreKey]; // Access the genre value using its key
+      const genre = genres[genreKey]; 
       const genreOption = document.createElement("option");
-      genreOption.value = genreKey; // Set the option value to the genre key
-      genreOption.textContent = genre; // Set the option text to the genre value
+      genreOption.value = genreKey; 
+      genreOption.textContent = genre; 
       genresFragment.appendChild(genreOption);
     }
 
@@ -168,10 +170,10 @@ const searchOverlayToggle = (event) => {
     authorsFragment.appendChild(allAuthorsOption);
 
     for (const authorKey of Object.keys(authors)) {
-      const author = authors[authorKey]; // Access the author value using its key
+      const author = authors[authorKey];
       const authorOption = document.createElement("option");
-      authorOption.value = authorKey; // Set the option value to the author key
-      authorOption.textContent = author; // Set the option text to the author value
+      authorOption.value = authorKey; 
+      authorOption.textContent = author; 
       authorsFragment.appendChild(authorOption);
     }
 
@@ -186,83 +188,77 @@ const searchOverlaySubmit = (event) => {
   const formData = new FormData(event.target);
   const { author, genre, title } = Object.fromEntries(formData);
   let counter = 0;
-  pageCounter = 1;
-  range = [0, 36];
-  searchArray = [];
+  pageCount = 1;
+  displayedBooksCount = [0, 36];
+  booksMatchingFilterCriteria = [];
   title ? counter++ : "";
   author !== "any" ? counter++ : "";
   genre !== "any" ? counter++ : "";
 
   if (counter !== 0) {
-    for (let i = 0; i < bookArray.length; i++) {
-      let titleMatch = false;
+    for (let i = 0; i < bookArrayNoDuplicates.length; i++) {
+      let titleOfBookMatches = false;
       if (title !== "") {
-        titleMatch = bookArray[i].title
+        titleOfBookMatches = bookArrayNoDuplicates[i].title
           .toLocaleLowerCase()
           .includes(title.trim().toLocaleLowerCase());
       }
-      let authorMatch = bookArray[i].author === author;
-      let genreMatch = false;
-      for (let j = 0; j < bookArray[i].genres.length; j++) {
-        if (bookArray[i].genres[j] === genre) {
-          genreMatch = true;
+      let authorOfBookMatches = bookArrayNoDuplicates[i].author === author;
+      let genreOfBookMatches = false;
+      for (let j = 0; j < bookArrayNoDuplicates[i].genres.length; j++) {
+        if (bookArrayNoDuplicates[i].genres[j] === genre) {
+          genreOfBookMatches = true;
         }
       }
 
-      const checkAll3 = authorMatch && genreMatch && titleMatch;
-      const check2 =
-        (authorMatch && (genreMatch || titleMatch)) ||
-        (genreMatch && titleMatch);
-      const check1 = genreMatch || authorMatch || titleMatch;
+      const bookMatchesAllFilters = authorOfBookMatches && genreOfBookMatches && titleOfBookMatches;
+      const bookMatchesAnyTwoFilters =
+        (authorOfBookMatches && (genreOfBookMatches || titleOfBookMatches)) ||
+        (genreOfBookMatches && titleOfBookMatches);
+      const bookMathesOneFilter = genreOfBookMatches || authorOfBookMatches || titleOfBookMatches;
 
       if (counter === 3) {
-        checkAll3 ? searchArray.push(bookArray[i]) : "";
+        bookMatchesAllFilters ? booksMatchingFilterCriteria.push(bookArrayNoDuplicates[i]) : "";
       } else if (counter === 2) {
-        check2 ? searchArray.push(bookArray[i]) : "";
+        bookMatchesAnyTwoFilters ? booksMatchingFilterCriteria.push(bookArrayNoDuplicates[i]) : "";
       } else if (counter === 1) {
-        check1 ? searchArray.push(bookArray[i]) : "";
+        bookMathesOneFilter ? booksMatchingFilterCriteria.push(bookArrayNoDuplicates[i]) : "";
       }
     }
 
-    if (searchArray.length === 0) {
-      createDisplay(searchArray);
+    if (booksMatchingFilterCriteria.length === 0) {
+      createDisplay(booksMatchingFilterCriteria);
       document
         .querySelector(".list__message")
         .style.setProperty("display", "block");
     } else {
-      createDisplay(searchArray);
+      createDisplay(booksMatchingFilterCriteria);
       document
         .querySelector(".list__message")
         .style.setProperty("display", "none");
     }
   } else {
-    createDisplay(bookArray);
+    createDisplay(bookArrayNoDuplicates);
   }
-  searchOverlay.open = false;
-  searchSave.reset();
+  bookSearchOverlay.open = false;
+  bookSearchSubmit.reset();
 };
 
-searchOpen.addEventListener("click", searchOverlayToggle);
-searchCancel.addEventListener("click", searchOverlayToggle);
-searchSave.addEventListener("submit", searchOverlaySubmit);
+bookSearchOpen.addEventListener("click", searchOverlayToggle);
+bookSearchCancel.addEventListener("click", searchOverlayToggle);
+bookSearchSubmit.addEventListener("submit", searchOverlaySubmit);
 
-/* Selects specific elements from the DOM using data attributes and assigns them to 
-  variables for further use.*/
-const settingOpen = document.querySelector("[data-header-settings]");
-const settingCancel = document.querySelector("[data-settings-cancel]");
-const settingSave = document.querySelector("[data-settings-form]");
-const settingOverlay = document.querySelector("[data-settings-overlay]");
 
-// Code to toggle the setting overlay
+
 const settingOverlayToggle = (event) => {
   if (event.target.innerHTML === "Cancel") {
-    settingSave.reset();
-    settingOverlay.open = false;
+    themeSettingSubmit.reset();
+    themeSettingOverlay.open = false;
   } else if (
     event.target.innerHTML !== "Cancel" &&
     event.target.innerHTML !== "Save"
   ) {
-    settingOverlay.open = true;
+    themeSettingOverlay.open = true;
   }
 };
 
@@ -270,40 +266,38 @@ const settingOverlaySubmit = (event) => {
   event.preventDefault();
   const formData = new FormData(event.target);
   const { theme } = Object.fromEntries(formData);
-  const matches = theme === "night";
+  const selectedNight = theme === "night";
   const root = document.documentElement;
 
-  if (matches) {
+  if (selectedNight) {
     root.style.setProperty("--color-dark", "255, 255, 255");
     root.style.setProperty("--color-light", "10, 10, 20");
   } else {
     root.style.setProperty("--color-dark", "10, 10, 20");
     root.style.setProperty("--color-light", "255, 255, 255");
   }
-  settingOverlay.open = false;
-  settingSave.reset()
+  themeSettingOverlay.open = false;
+  themeSettingSubmit.reset()
 };
 
-settingOpen.addEventListener("click", settingOverlayToggle);
-settingCancel.addEventListener("click", settingOverlayToggle);
-settingSave.addEventListener("submit", settingOverlaySubmit);
+themeSettingOpen.addEventListener("click", settingOverlayToggle);
+themeSettingCancel.addEventListener("click", settingOverlayToggle);
+themeSettingSubmit.addEventListener("submit", settingOverlaySubmit);
 
-const dataListOpen = document.querySelector("[data-list-items]");
-const dataListClose = document.querySelector("[data-list-close]");
 
-const dataListToggle = (event) => {
-  let specificBook = event.target.id;
+
+const bookPreivewToggle = (event) => {
+  let selectedBook = event.target.id;
   if (event.target.innerHTML !== "Close") {
     event.preventDefault();
-    console.log(event);
+    overlayDataSecondaryStyling()
     document.querySelector("[data-list-active]").open = true;
-    for (const obj of newArray) {
-      if (obj.id === specificBook) {
+    for (const obj of bookArrayNoDuplicates) {
+      if (obj.id === selectedBook) {
         document.querySelector("[data-list-image]").src = obj.image;
         document.querySelector("[data-list-title]").innerHTML = obj.title;
-        document.querySelector("[data-list-subtitle]").innerHTML = `${
-          authors[obj.author]
-        } (${new Date(obj.published).getFullYear()})`;
+        document.querySelector("[data-list-subtitle]").innerHTML = `${authors[obj.author]} 
+        (${new Date(obj.published).getFullYear()})`;
         document.querySelector("[data-list-description]").innerHTML =
           obj.description;
       }
@@ -313,12 +307,17 @@ const dataListToggle = (event) => {
   }
 };
 
-dataListOpen.addEventListener("click", dataListToggle);
-dataListClose.addEventListener("click", dataListToggle);
+bookPreviewOpen.addEventListener("click", bookPreivewToggle);
+bookPreviewClose.addEventListener("click", bookPreivewToggle);
 
+/**
+ * Adds a scroll bar in order to read the whole description of a book
+ */
+const overlayDataSecondaryStyling = () => {
 const overlayDataSecondary = document.querySelector(".overlay__data_secondary");
 overlayDataSecondary.style.setProperty("padding", "20px");
 overlayDataSecondary.style.setProperty("overflow-x", "hidden");
 overlayDataSecondary.style.setProperty("overflow-y", "scroll");
 overlayDataSecondary.style.setProperty("max-height", "250px");
+}
 
