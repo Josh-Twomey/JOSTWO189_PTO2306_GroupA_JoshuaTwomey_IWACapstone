@@ -1,7 +1,10 @@
 import { BOOKS_PER_PAGE, authors, genres, books } from "../JS/data.js";
-// Add jsDoc to some functions
+
 const bookArrayNoDuplicates = [];
 let booksMatchingFilterCriteria = [];
+let pageCount = 1;
+let displayedBooksCount = [0, 36];
+
 //This for loop removes the duplicate entries from books array and populates the bookArrayNoDuplicates 
 for (const obj of books) {
   const newObject = { ...obj }; // Creates shallow copy of obj
@@ -9,8 +12,6 @@ for (const obj of books) {
     bookArrayNoDuplicates.push(newObject);
   }
 }
-let pageCount = 1;
-let displayedBooksCount = [0, 36];
 
 if (!bookArrayNoDuplicates && !Array.isArray(bookArrayNoDuplicates)) throw new Error("Source required");
 if (!displayedBooksCount && displayedBooksCount.length < 2)
@@ -30,11 +31,12 @@ const themeSettingOverlay = document.querySelector("[data-settings-overlay]");
 const bookPreviewOpen = document.querySelector("[data-list-items]");
 const bookPreviewClose = document.querySelector("[data-list-close]");
 
+/*=====================Show More Button=====================*/
 
 /**
- * JavaScript code for updating the text of a button based on a given number.
- * If the number is greater than or equal to a certain value, the button text will include the remaining number of items.
- * Otherwise, the button text will indicate that there are no remaining items and the button will be disabled.
+ * Updates the text of the showMoreButton based on the array.length being displayed.
+ * Disables button if no more books to display 
+ * @param {number}
  */
 
 const updateButton = (number) => {
@@ -55,6 +57,7 @@ const updateButton = (number) => {
   }
 };
 
+/** Updates the displayed books when the button is clicked*/
 const showMoreBooks = () => {
   if (booksMatchingFilterCriteria.length > 0) {
     pageCount = pageCount + 1;
@@ -70,22 +73,28 @@ const showMoreBooks = () => {
     createDisplay(bookArrayNoDuplicates);
   }
 };
-
 showMoreButton.addEventListener("click", showMoreBooks);
 
+/*=====================Book Display=====================*/
+
+/**Creates the display for the book list
+ * @param {array} : array with the book data
+ * @returns : displays the books on the webpage
+*/
 const createDisplay = (array) => {
   document.querySelector("[data-list-items]").innerHTML = "";
   const bookListFragment = document.createDocumentFragment();
-  let visibleBooks = [];
+  let visibleBooksArray = [];
   updateButton(array.length);
   if (array.length > 36) {
-    visibleBooks = array.slice(displayedBooksCount[0], displayedBooksCount[1]);
+    visibleBooksArray = array.slice(displayedBooksCount[0], displayedBooksCount[1]);
   } else {
-    visibleBooks = array.slice(displayedBooksCount[0], array.length);
+    visibleBooksArray = array.slice(displayedBooksCount[0], array.length);
   }
 
 /**
  * Creates an HTML element for displaying the book details.
+ * @param {object} : book data split into relevant content
  */
   const createBookHtml = (bookDetails) => {
     const { id, title, author, image } = bookDetails;
@@ -110,17 +119,16 @@ const createDisplay = (array) => {
   };
 
 /*
- This code iterates through the 'extractedArray' and creates an HTML element for
- each item in the array using the 'createBookHtml' function. The created HTML 
- elements are then appended to the 'bookListFragment'.
+ This code iterates through the 'visibleBooksArray' and creates an HTML element for
+ each item in the array using the 'createBookHtml' function.
 */
 
-  for (let i = 0; i < visibleBooks.length; i++) {
+  for (let i = 0; i < visibleBooksArray.length; i++) {
     const bookList = createBookHtml({
-      author: authors[visibleBooks[i].author],
-      id: visibleBooks[i].id,
-      image: visibleBooks[i].image,
-      title: visibleBooks[i].title,
+      author: authors[visibleBooksArray[i].author],
+      id: visibleBooksArray[i].id,
+      image: visibleBooksArray[i].image,
+      title: visibleBooksArray[i].title,
     });
 
     bookListFragment.appendChild(bookList);
@@ -132,9 +140,10 @@ const createDisplay = (array) => {
 // Original Display for the web page created
 createDisplay(bookArrayNoDuplicates);
 
+/*=====================Book Search Overlay=====================*/
 
-
-const searchOverlayToggle = (event) => {
+/** If the toggle is open, Authors and Genres are loaded dynamically to the drop-down menus respectively*/
+const bookSearchOverlayToggle = (event) => {
   if (event.target.innerHTML === "Cancel") {
     bookSearchOverlay.open = false;
     bookSearchSubmit.reset();
@@ -175,13 +184,14 @@ const searchOverlayToggle = (event) => {
       authorsFragment.appendChild(authorOption);
     }
 
-    document
-      .querySelector("[data-search-authors]")
-      .appendChild(authorsFragment);
+    document.querySelector("[data-search-authors]").appendChild(authorsFragment);
   }
 };
 
-const searchOverlaySubmit = (event) => {
+/**Displays books that meet the criteria based on user selection from options 
+ * given on the overlay
+*/
+const bookSearchOverlaySubmit = (event) => {
   event.preventDefault();
   window.scrollTo({ top: 0, behavior: "smooth" });
   const formData = new FormData(event.target);
@@ -243,13 +253,13 @@ const searchOverlaySubmit = (event) => {
   bookSearchSubmit.reset();
 };
 
-bookSearchOpen.addEventListener("click", searchOverlayToggle);
-bookSearchCancel.addEventListener("click", searchOverlayToggle);
-bookSearchSubmit.addEventListener("submit", searchOverlaySubmit);
+bookSearchOpen.addEventListener("click", bookSearchOverlayToggle);
+bookSearchCancel.addEventListener("click", bookSearchOverlayToggle);
+bookSearchSubmit.addEventListener("submit", bookSearchOverlaySubmit);
 
+/*=====================Theme Setting Overlay=====================*/
 
-
-const settingOverlayToggle = (event) => {
+const themeSettingOverlayToggle = (event) => {
   if (event.target.innerHTML === "Cancel") {
     themeSettingSubmit.reset();
     themeSettingOverlay.open = false;
@@ -261,7 +271,8 @@ const settingOverlayToggle = (event) => {
   }
 };
 
-const settingOverlaySubmit = (event) => {
+/**Changes the colours of the page based on user selection from options given on the overlay*/
+const themeSettingOverlaySubmit = (event) => {
   event.preventDefault();
   const formData = new FormData(event.target);
   const { theme } = Object.fromEntries(formData);
@@ -279,18 +290,18 @@ const settingOverlaySubmit = (event) => {
   themeSettingSubmit.reset()
 };
 
-themeSettingOpen.addEventListener("click", settingOverlayToggle);
-themeSettingCancel.addEventListener("click", settingOverlayToggle);
-themeSettingSubmit.addEventListener("submit", settingOverlaySubmit);
+themeSettingOpen.addEventListener("click", themeSettingOverlayToggle);
+themeSettingCancel.addEventListener("click", themeSettingOverlayToggle);
+themeSettingSubmit.addEventListener("submit", themeSettingOverlaySubmit);
 
+/*=====================Book Preview Overlay=====================*/
 
-
+/**Displays Preview Overlay with more information on a book the user clicks on*/
 const bookPreivewToggle = (event) => {
   let selectedBook = event.target.id;
   if (event.target.innerHTML !== "Close") {
     event.preventDefault();
     overlayDataSecondaryStyling();
-
     document.querySelector("[data-list-active]").open = true;
     for (const obj of bookArrayNoDuplicates) {
       if (obj.id === selectedBook) {
