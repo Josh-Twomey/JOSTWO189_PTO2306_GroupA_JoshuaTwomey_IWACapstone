@@ -322,7 +322,7 @@ bookPreviewOpen.addEventListener("click", bookPreivewToggle);
 bookPreviewClose.addEventListener("click", bookPreivewToggle);
 
 /**
- * Adds a scroll bar in order to read the whole description of a book
+ * Adds a scroll bar in order to read the whole description of a book in the Preview Overlay
  */
 const overlayDataSecondaryStyling = () => {
 const overlayDataSecondary = document.querySelector(".overlay__data_secondary");
