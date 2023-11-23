@@ -5,7 +5,7 @@ let booksMatchingFilterCriteria = [];
 let pageCount = 1;
 let displayedBooksCount = [0, 36];
 
-//This for loop removes the duplicate entries from books array and populates the bookArrayNoDuplicates 
+//This for loops through the book array and populates the bookArrayNoDuplicates if the book has not been added 
 for (const obj of books) {
   const newObject = { ...obj }; // Creates shallow copy of obj
   if (!bookArrayNoDuplicates.some((book) => book.title === newObject.title)) {

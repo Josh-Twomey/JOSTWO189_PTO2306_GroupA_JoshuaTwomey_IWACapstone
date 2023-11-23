@@ -1,5 +1,7 @@
+/**Maximum amount of books allowed to be displayed */
 export const BOOKS_PER_PAGE = 36;
 
+/**Object containing all the authors the books are written by*/
 export const authors = {
   "194e164b-9365-4358-b44a-f28a93cc528f": "Steven D. Levitt",
   "76e8065c-fd7a-4a8b-a8ea-6105a47d0781": "Stephen J. Dubner",
@@ -89,7 +91,7 @@ export const authors = {
   "b9cd8a1d-0586-4cb2-9b1a-e3d9dce79faf": "Anna Quindlen",
   "37018341-31f4-4ffa-8755-a49979c218dd": "Suzanne Collins",
 };
-
+/**Object containing all the genres the books are catergorised by*/
 export const genres = {
   "a4f80b3e-3e96-4266-b729-e09b71793182": "Economics",
   "6dd5bb6e-0172-4d6e-aa18-26f00954dd7a": "Non-fiction",
@@ -160,7 +162,7 @@ export const genres = {
   "c40bbf55-c8ee-4fe3-a21f-ed16210afd95": "Russian-literature",
   "64c4197d-5f8e-4bff-b440-6d19bc591fd9": "Magic",
 };
-
+/**Array containing all the books to be displayed, including some Duplicate Entries */
 export const books = [
   {
     id: "760b3450-9c86-42d0-8eff-e793bf823756",
