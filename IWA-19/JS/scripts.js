@@ -1,6 +1,4 @@
 import { BOOKS_PER_PAGE, authors, genres, books } from "../JS/data.js";
-// Add feature to scroll to the top of the page
-// Add Blur
 // Add jsDoc to some functions
 const bookArrayNoDuplicates = [];
 let booksMatchingFilterCriteria = [];
@@ -185,6 +183,7 @@ const searchOverlayToggle = (event) => {
 
 const searchOverlaySubmit = (event) => {
   event.preventDefault();
+  window.scrollTo({ top: 0, behavior: "smooth" });
   const formData = new FormData(event.target);
   const { author, genre, title } = Object.fromEntries(formData);
   let counter = 0;
@@ -290,16 +289,17 @@ const bookPreivewToggle = (event) => {
   let selectedBook = event.target.id;
   if (event.target.innerHTML !== "Close") {
     event.preventDefault();
-    overlayDataSecondaryStyling()
+    overlayDataSecondaryStyling();
+
     document.querySelector("[data-list-active]").open = true;
     for (const obj of bookArrayNoDuplicates) {
       if (obj.id === selectedBook) {
         document.querySelector("[data-list-image]").src = obj.image;
+        document.querySelector("[data-list-blur]").src = document.querySelector("[data-list-image]").src;
         document.querySelector("[data-list-title]").innerHTML = obj.title;
         document.querySelector("[data-list-subtitle]").innerHTML = `${authors[obj.author]} 
         (${new Date(obj.published).getFullYear()})`;
-        document.querySelector("[data-list-description]").innerHTML =
-          obj.description;
+        document.querySelector("[data-list-description]").innerHTML = obj.description;
       }
     }
   } else if (event.target.innerHTML === "Close") {
