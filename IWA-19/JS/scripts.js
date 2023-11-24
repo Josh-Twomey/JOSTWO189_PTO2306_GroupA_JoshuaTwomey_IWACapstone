@@ -1,8 +1,13 @@
 import { BOOKS_PER_PAGE, authors, genres, books } from "../JS/data.js";
-
+/**bookArrayNoDuplicates is a dynamically created array that removes duplicates from the origianl given array */
 const bookArrayNoDuplicates = [];
+/**booksMatchingFiterCriteria that gets books pushed to it when they match the Filter Criteria
+ * selected by the User
+ */
 let booksMatchingFilterCriteria = [];
+/**pageCount is used to keep track of the displayed pages on the screen*/
 let pageCount = 1;
+/**displayedBooksCount is used to change the amount of books that are displayed on screen */
 let displayedBooksCount = [0, 36];
 
 //This for loops through the book array and populates the bookArrayNoDuplicates if the book has not been added 
@@ -196,10 +201,10 @@ const bookSearchOverlaySubmit = (event) => {
   window.scrollTo({ top: 0, behavior: "smooth" });
   const formData = new FormData(event.target);
   const { author, genre, title } = Object.fromEntries(formData);
-  let counter = 0;
   pageCount = 1;
   displayedBooksCount = [0, 36];
   booksMatchingFilterCriteria = [];
+  let counter = 0;
   title ? counter++ : "";
   author !== "any" ? counter++ : "";
   genre !== "any" ? counter++ : "";
@@ -297,7 +302,7 @@ themeSettingSubmit.addEventListener("submit", themeSettingOverlaySubmit);
 /*=====================Book Preview Overlay=====================*/
 
 /**Displays Preview Overlay with more information on a book the user clicks on*/
-const bookPreivewToggle = (event) => {
+const bookPreivewDisplay = (event) => {
   let selectedBook = event.target.id;
   if (event.target.innerHTML !== "Close") {
     event.preventDefault();
@@ -318,8 +323,8 @@ const bookPreivewToggle = (event) => {
   }
 };
 
-bookPreviewOpen.addEventListener("click", bookPreivewToggle);
-bookPreviewClose.addEventListener("click", bookPreivewToggle);
+bookPreviewOpen.addEventListener("click", bookPreivewDisplay);
+bookPreviewClose.addEventListener("click", bookPreivewDisplay);
 
 /**
  * Adds a scroll bar in order to read the whole description of a book in the Preview Overlay
